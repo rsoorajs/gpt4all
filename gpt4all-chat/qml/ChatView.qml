@@ -298,9 +298,11 @@ Rectangle {
                             id: contentRow
                             anchors.centerIn: parent
                             spacing: 0
+                            Layout.maximumWidth: 550
                             RowLayout {
                                 id: miniButtonsRow
                                 clip: true
+                                Layout.maximumWidth: 550
                                 Behavior on Layout.preferredWidth {
                                     NumberAnimation {
                                         duration: 300
@@ -309,7 +311,7 @@ Rectangle {
                                 }
 
                                 Layout.preferredWidth: {
-                                    if (!comboBox.hovered)
+                                    if (!(comboBox.hovered || reloadButton.hovered || ejectButton.hovered))
                                         return 0
                                     return (reloadButton.visible ? reloadButton.width : 0) + (ejectButton.visible ? ejectButton.width : 0)
                                 }
@@ -350,6 +352,7 @@ Rectangle {
                             }
 
                             Text {
+                                Layout.maximumWidth: 520
                                 id: comboBoxText
                                 leftPadding: 10
                                 rightPadding: 10
@@ -949,13 +952,35 @@ Rectangle {
 
                                         ChatViewTextProcessor {
                                             id: textProcessor
-                                            fontPixelSize: myTextArea.font.pixelSize
+                                        }
+
+                                        function resetChatViewTextProcessor() {
+                                            textProcessor.fontPixelSize                = myTextArea.font.pixelSize
+                                            textProcessor.codeColors.defaultColor      = theme.codeDefaultColor
+                                            textProcessor.codeColors.keywordColor      = theme.codeKeywordColor
+                                            textProcessor.codeColors.functionColor     = theme.codeFunctionColor
+                                            textProcessor.codeColors.functionCallColor = theme.codeFunctionCallColor
+                                            textProcessor.codeColors.commentColor      = theme.codeCommentColor
+                                            textProcessor.codeColors.stringColor       = theme.codeStringColor
+                                            textProcessor.codeColors.numberColor       = theme.codeNumberColor
+                                            textProcessor.codeColors.headerColor       = theme.codeHeaderColor
+                                            textProcessor.codeColors.backgroundColor   = theme.codeBackgroundColor
+                                            textProcessor.textDocument                 = textDocument
+                                            chatModel.forceUpdate(index); // called to trigger a reprocessing of the text
                                         }
 
                                         Component.onCompleted: {
-                                            textProcessor.setLinkColor(theme.linkColor);
-                                            textProcessor.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
-                                            textProcessor.textDocument = textDocument
+                                            resetChatViewTextProcessor();
+                                        }
+
+                                        Connections {
+                                            target: MySettings
+                                            function onFontSizeChanged() {
+                                                myTextArea.resetChatViewTextProcessor();
+                                            }
+                                            function onChatThemeChanged() {
+                                                myTextArea.resetChatViewTextProcessor();
+                                            }
                                         }
 
                                         Accessible.role: Accessible.Paragraph
@@ -1303,7 +1328,7 @@ Rectangle {
                             footer: Item {
                                 id: bottomPadding
                                 width: parent.width
-                                height: 60
+                                height: 0
                             }
                         }
                     }
@@ -1463,7 +1488,7 @@ Rectangle {
                 id: conversationTrayButton
                 anchors.bottom: textInputView.top
                 anchors.horizontalCenter: textInputView.horizontalCenter
-                width: 30
+                width: 40
                 height: 30
                 visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded
                 property bool isHovered: conversationTrayMouseAreaButton.containsMouse
@@ -1474,13 +1499,14 @@ Rectangle {
                 }
                 Text {
                     id: conversationTrayTextButton
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.centerIn: parent
                     horizontalAlignment: Qt.AlignHCenter
                     leftPadding: 5
                     rightPadding: 5
                     text: "\u00B7\u00B7\u00B7"
                     color: theme.textColor
-                    font.pixelSize: 20 // fixed size
+                    font.pixelSize: 30 // fixed size
+                    font.bold: true
                 }
             }
 
@@ -1670,8 +1696,8 @@ Rectangle {
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
                 anchors.rightMargin: 15
-                imageWidth: theme.fontSizeLarger
-                imageHeight: theme.fontSizeLarger
+                imageWidth: theme.fontSizeLargest
+                imageHeight: theme.fontSizeLargest
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 enabled: !currentChat.responseInProgress
                 source: "qrc:/gpt4all/icons/send_message.svg"
