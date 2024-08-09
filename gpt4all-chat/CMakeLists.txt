@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
@@ -32,8 +32,8 @@ project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-option(GPT4ALL_TRANSLATIONS OFF "Build with translations")
-option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
+option(GPT4ALL_TRANSLATIONS "Build with translations" OFF)
+option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
 
@@ -229,9 +229,10 @@ qt_add_qml_module(chat
 )
 
 if (GPT4ALL_TRANSLATIONS)
+    target_compile_definitions(chat PRIVATE GPT4ALL_USE_TRANSLATIONS)
     qt_add_translations(chat
         TS_FILES
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
