@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)  # for try_compile SOURCE_FROM_VAR
 
+include(../common/common.cmake)
+
 set(APP_VERSION_MAJOR 3)
 set(APP_VERSION_MINOR 4)
 set(APP_VERSION_PATCH 1)
@@ -157,6 +159,7 @@ qt_add_executable(chat
     src/xlsxtomd.cpp              src/xlsxtomd.h
     ${CHAT_EXE_RESOURCES}
 )
+gpt4all_add_warning_options(chat)
 
 qt_add_qml_module(chat
     URI gpt4all
@@ -297,15 +300,17 @@ if (APPLE)
         OUTPUT_NAME gpt4all
     )
     add_dependencies(chat ggml-metal)
+endif()
 
-    if(NOT MAC_SIGNING_IDENTITY)
-        if(NOT DEFINED ENV{MAC_SIGNING_CERT_NAME} AND GPT4ALL_SIGN_INSTALL)
+if (APPLE AND GPT4ALL_SIGN_INSTALL)
+    if (NOT MAC_SIGNING_IDENTITY)
+        if (NOT DEFINED ENV{MAC_SIGNING_CERT_NAME})
             REPORT_MISSING_SIGNING_CONTEXT()
         endif()
         set(MAC_SIGNING_IDENTITY $ENV{MAC_SIGNING_CERT_NAME})
     endif()
-    if(NOT MAC_SIGNING_TID)
-        if(NOT DEFINED ENV{MAC_NOTARIZATION_TID} AND GPT4ALL_SIGN_INSTALL)
+    if (NOT MAC_SIGNING_TID)
+        if (NOT DEFINED ENV{MAC_NOTARIZATION_TID})
             REPORT_MISSING_SIGNING_CONTEXT()
         endif()
         set(MAC_SIGNING_TID $ENV{MAC_NOTARIZATION_TID})
